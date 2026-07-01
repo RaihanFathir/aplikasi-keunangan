@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dompetku — Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0f1117; color: #dfe7f5; display: flex; min-height: 100vh; }
+
+    .sidebar { width: 220px; background: #161b27; border-right: 1px solid #2a2f3d; padding: 24px 0; display: flex; flex-direction: column; position: fixed; height: 100vh; }
+    .logo { display: flex; align-items: center; gap: 10px; padding: 0 20px 24px; border-bottom: 1px solid #2a2f3d; margin-bottom: 16px; }
+    .logo-icon { width: 36px; height: 36px; background: #4f6ef7; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .logo-text { font-size: 16px; font-weight: 700; color: #fff; }
+    .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 20px; font-size: 14px; color: #6b7280; text-decoration: none; transition: all 0.2s; border-left: 3px solid transparent; }
+    .nav-item:hover { background: #1e2535; color: #dfe7f5; }
+    .nav-item.active { background: #1e2535; color: #fff; border-left: 3px solid #4f6ef7; }
+    .nav-item i { width: 18px; text-align: center; }
+    .sidebar-bottom { margin-top: auto; padding: 16px 20px; border-top: 1px solid #2a2f3d; }
+    .user-info { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .user-avatar { width: 32px; height: 32px; background: #4f6ef7; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
+    .user-name { font-size: 13px; color: #dfe7f5; font-weight: 500; }
+    .logout-btn { display: flex; align-items: center; gap: 8px; color: #e05c6a; font-size: 13px; text-decoration: none; padding: 8px 0; }
+    .logout-btn:hover { color: #ff7b8a; }
+
+    .main { margin-left: 220px; flex: 1; padding: 28px; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .page-title { font-size: 22px; font-weight: 600; color: #fff; }
+    .page-sub { font-size: 13px; color: #6b7280; margin-top: 4px; }
+    .btn { display: flex; align-items: center; gap: 8px; background: #4f6ef7; color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; text-decoration: none; transition: background 0.2s; }
+    .btn:hover { background: #3b5bdb; }
+
+    .cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+    .metric-card { background: #1a1f2e; border: 1px solid #2a2f3d; border-radius: 14px; padding: 20px; }
+    .metric-card.accent { border-color: #4f6ef7; }
+    .metric-card.success { border-color: #2d6a4f; }
+    .metric-card.danger  { border-color: #6b2d2d; }
+    .metric-label { font-size: 12px; color: #6b7280; display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+    .metric-value { font-size: 24px; font-weight: 700; }
+    .metric-card.accent .metric-value  { color: #7b96ff; }
+    .metric-card.success .metric-value { color: #4cba85; }
+    .metric-card.danger .metric-value  { color: #e05c6a; }
+    .metric-sub { font-size: 12px; color: #6b7280; margin-top: 6px; }
+    .metric-sub.up   { color: #4cba85; }
+    .metric-sub.down { color: #e05c6a; }
+
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+    .row3 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+    .panel { background: #1a1f2e; border: 1px solid #2a2f3d; border-radius: 14px; padding: 20px; }
+    .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #2a2f3d; }
+    .panel-title { font-size: 14px; font-weight: 600; color: #c8cad4; }
+    .panel-link { font-size: 12px; color: #4f6ef7; text-decoration: none; }
+    .panel-link:hover { color: #7b96ff; }
+
+    .wallet-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #1e2535; }
+    .wallet-item:last-child { border-bottom: none; }
+    .wallet-name { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #9ca3af; }
+    .wallet-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .wallet-right { text-align: right; }
+    .wallet-val { font-size: 14px; font-weight: 600; color: #dfe7f5; }
+    .progress-bar { background: #1e2535; border-radius: 4px; height: 3px; width: 80px; margin-top: 4px; }
+    .progress-fill { height: 100%; border-radius: 4px; }
+
+    .tx-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #1e2535; }
+    .tx-item:last-child { border-bottom: none; }
+    .tx-info { display: flex; align-items: center; gap: 10px; }
+    .tx-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+    .tx-icon.pemasukan  { background: #1a2e25; color: #4cba85; }
+    .tx-icon.pengeluaran { background: #2a1a20; color: #e05c6a; }
+    .tx-icon.pindah     { background: #1a2040; color: #7b96ff; }
+    .tx-name { font-size: 13px; color: #dfe7f5; }
+    .tx-date { font-size: 11px; color: #6b7280; margin-top: 2px; }
+    .tx-amount { font-size: 13px; font-weight: 600; }
+    .tx-amount.pemasukan  { color: #4cba85; }
+    .tx-amount.pengeluaran { color: #e05c6a; }
+    .tx-amount.pindah     { color: #7b96ff; }
+
+    .cat-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #1e2535; }
+    .cat-item:last-child { border-bottom: none; }
+    .cat-label { font-size: 12px; color: #9ca3af; margin-bottom: 4px; }
+    .cat-bar-wrap { background: #1e2535; border-radius: 4px; height: 3px; width: 100px; margin-top: 4px; }
+    .cat-bar-fill { height: 100%; border-radius: 4px; }
+    .cat-pct { font-size: 12px; color: #6b7280; }
+
+    .empty { text-align: center; padding: 30px; color: #6b7280; font-size: 13px; }
+    .empty i { font-size: 32px; margin-bottom: 10px; display: block; color: #2a2f3d; }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="logo">
+      <div class="logo-icon"><i class="fa-solid fa-wallet"></i></div>
+      <div class="logo-text">Dompetku</div>
+    </div>
+    <a href="/dashboard" class="nav-item active"><i class="fa-solid fa-house"></i> Dashboard</a>
+    <a href="/penyimpanan" class="nav-item"><i class="fa-solid fa-building-columns"></i> Penyimpanan</a>
+    <a href="/transaksi" class="nav-item"><i class="fa-solid fa-arrows-left-right"></i> Transaksi</a>
+    <a href="/laporan" class="nav-item"><i class="fa-solid fa-chart-pie"></i> Laporan</a>
+    <div class="sidebar-bottom">
+      <div class="user-info">
+        <div class="user-avatar">{{ username[0].upper() }}</div>
+        <div class="user-name">{{ username }}</div>
+      </div>
+      <a href="/logout" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Keluar</a>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="page-title">Dashboard</div>
+        <div class="page-sub" id="tanggal"></div>
+      </div>
+      <a href="/transaksi" class="btn"><i class="fa-solid fa-plus"></i> Tambah Transaksi</a>
+    </div>
+
+    <div class="cards-grid">
+      <div class="metric-card accent">
+        <div class="metric-label"><i class="fa-solid fa-wallet"></i> Total Saldo</div>
+        <div class="metric-value">Rp {{ "{:,.0f}".format(total_saldo).replace(",", ".") }}</div>
+        <div class="metric-sub">{{ penyimpanan|length }} penyimpanan aktif</div>
+      </div>
+      <div class="metric-card success">
+        <div class="metric-label"><i class="fa-solid fa-arrow-trend-up"></i> Pemasukan Bulan Ini</div>
+        {% set masuk = namespace(val=0) %}
+        {% for t in transaksi if t.jenis == 'pemasukan' and t.tanggal[:7] == bulan_ini %}
+          {% set masuk.val = masuk.val + t.nominal %}
+        {% endfor %}
+        <div class="metric-value">Rp {{ "{:,.0f}".format(masuk.val).replace(",", ".") }}</div>
+        <div class="metric-sub up"><i class="fa-solid fa-arrow-up"></i> bulan ini</div>
+      </div>
+      <div class="metric-card danger">
+        <div class="metric-label"><i class="fa-solid fa-arrow-trend-down"></i> Pengeluaran Bulan Ini</div>
+        {% set keluar = namespace(val=0) %}
+        {% for t in transaksi if t.jenis == 'pengeluaran' and t.tanggal[:7] == bulan_ini %}
+          {% set keluar.val = keluar.val + t.nominal %}
+        {% endfor %}
+        <div class="metric-value">Rp {{ "{:,.0f}".format(keluar.val).replace(",", ".") }}</div>
+        <div class="metric-sub down"><i class="fa-solid fa-arrow-down"></i> bulan ini</div>
+      </div>
+    </div>
+
+    <div class="row2">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Penyimpanan</div>
+          <a href="/penyimpanan" class="panel-link">Kelola</a>
+        </div>
+        {% if penyimpanan %}
+          {% set colors = ['#4f6ef7','#4cba85','#f7c948','#e05c6a','#a78bfa','#7ec8e3'] %}
+          {% set total = namespace(val=0) %}
+          {% for v in penyimpanan.values() %}{% set total.val = total.val + v %}{% endfor %}
+          {% for nama, saldo in penyimpanan.items() %}
+          <div class="wallet-item">
+            <div class="wallet-name">
+              <div class="wallet-dot" style="background:{{ colors[loop.index0 % colors|length] }}"></div>
+              {{ nama }}
+            </div>
+            <div class="wallet-right">
+              <div class="wallet-val">Rp {{ "{:,.0f}".format(saldo).replace(",", ".") }}</div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width:{{ ((saldo/total.val*100) if total.val > 0 else 0)|int }}%; background:{{ colors[loop.index0 % colors|length] }}"></div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="empty">
+            <i class="fa-solid fa-folder-open"></i>
+            Belum ada penyimpanan.<br>
+            <a href="/penyimpanan" style="color:#4f6ef7;">Buat sekarang</a>
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Transaksi Terakhir</div>
+          <a href="/transaksi" class="panel-link">Lihat semua</a>
+        </div>
+        {% set recent = transaksi[-5:] | reverse | list %}
+        {% if recent %}
+          {% for t in recent %}
+          <div class="tx-item">
+            <div class="tx-info">
+              <div class="tx-icon {{ t.jenis }}">
+                {% if t.jenis == 'pemasukan' %}<i class="fa-solid fa-arrow-down"></i>
+                {% elif t.jenis == 'pengeluaran' %}<i class="fa-solid fa-arrow-up"></i>
+                {% else %}<i class="fa-solid fa-arrows-left-right"></i>{% endif %}
+              </div>
+              <div>
+                <div class="tx-name">{{ t.keterangan or t.jenis|capitalize }}</div>
+                <div class="tx-date">{{ t.tanggal }} · {{ t.dari or t.tujuan }}</div>
+              </div>
+            </div>
+            <div class="tx-amount {{ t.jenis }}">
+              {% if t.jenis == 'pemasukan' %}+{% elif t.jenis == 'pengeluaran' %}-{% endif %}
+              Rp {{ "{:,.0f}".format(t.nominal).replace(",", ".") }}
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="empty">
+            <i class="fa-solid fa-receipt"></i>
+            Belum ada transaksi.
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="row3">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Grafik 6 Bulan Terakhir</div>
+        </div>
+        <canvas id="grafikBulanan" height="100"></canvas>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Ringkasan Bulan Ini</div>
+        </div>
+        {% set mk = namespace(m=0, k=0) %}
+        {% for t in transaksi if t.tanggal[:7] == bulan_ini %}
+          {% if t.jenis == 'pemasukan' %}{% set mk.m = mk.m + t.nominal %}{% endif %}
+          {% if t.jenis == 'pengeluaran' %}{% set mk.k = mk.k + t.nominal %}{% endif %}
+        {% endfor %}
+        {% set total_mk = mk.m + mk.k %}
+        <div class="cat-item">
+          <div>
+            <div class="cat-label"><i class="fa-solid fa-circle" style="color:#4cba85;font-size:8px;"></i> Pemasukan</div>
+            <div class="cat-bar-wrap"><div class="cat-bar-fill" style="width:{{ ((mk.m/total_mk*100) if total_mk > 0 else 0)|int }}%;background:#4cba85;"></div></div>
+          </div>
+          <div class="cat-pct">{{ ((mk.m/total_mk*100) if total_mk > 0 else 0)|int }}%</div>
+        </div>
+        <div class="cat-item">
+          <div>
+            <div class="cat-label"><i class="fa-solid fa-circle" style="color:#e05c6a;font-size:8px;"></i> Pengeluaran</div>
+            <div class="cat-bar-wrap"><div class="cat-bar-fill" style="width:{{ ((mk.k/total_mk*100) if total_mk > 0 else 0)|int }}%;background:#e05c6a;"></div></div>
+          </div>
+          <div class="cat-pct">{{ ((mk.k/total_mk*100) if total_mk > 0 else 0)|int }}%</div>
+        </div>
+        <div style="margin-top:16px;padding-top:12px;border-top:1px solid #2a2f3d;">
+          <div style="font-size:12px;color:#6b7280;margin-bottom:6px;">Selisih bulan ini</div>
+          <div style="font-size:20px;font-weight:700;color:{% if mk.m >= mk.k %}#4cba85{% else %}#e05c6a{% endif %};">
+            Rp {{ "{:,.0f}".format(mk.m - mk.k).replace(",", ".") }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const hari  = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+    const bulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    const now   = new Date();
+    document.getElementById('tanggal').textContent =
+      hari[now.getDay()] + ', ' + now.getDate() + ' ' + bulan[now.getMonth()] + ' ' + now.getFullYear();
+
+    const dataTransaksi = {{ transaksi | tojson }};
+    const labels = [], dataIn = [], dataOut = [];
+
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date();
+      d.setMonth(d.getMonth() - i);
+      const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+      labels.push(bulan[d.getMonth()].slice(0,3));
+      let m = 0, k = 0;
+      dataTransaksi.forEach(t => {
+        if (t.tanggal.startsWith(key)) {
+          if (t.jenis === 'pemasukan')   m += t.nominal;
+          if (t.jenis === 'pengeluaran') k += t.nominal;
+        }
+      });
+      dataIn.push(m); dataOut.push(k);
+    }
+
+    new Chart(document.getElementById('grafikBulanan').getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label: 'Pemasukan',   data: dataIn,  backgroundColor: '#4cba85', borderRadius: 6 },
+          { label: 'Pengeluaran', data: dataOut, backgroundColor: '#e05c6a', borderRadius: 6 }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { labels: { color: '#9ca3af', font: { size: 12 } } } },
+        scales: {
+          x: { ticks: { color: '#6b7280' }, grid: { color: '#1e2535' } },
+          y: { ticks: { color: '#6b7280' }, grid: { color: '#1e2535' } }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

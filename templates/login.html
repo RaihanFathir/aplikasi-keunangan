@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dompetku Bukan Dompetmu — Login</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0f1117; color: #dfe7f5; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .container { width: 100%; max-width: 420px; padding: 20px; }
+    .logo { text-align: center; margin-bottom: 32px; }
+    .logo-icon { width: 56px; height: 56px; background: #4f6ef7; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 12px; }
+    .logo-text { font-size: 22px; font-weight: 700; color: #fff; }
+    .logo-sub { font-size: 13px; color: #6b7280; margin-top: 4px; }
+    .card { background: #161b27; border: 1px solid #2a2f3d; border-radius: 16px; padding: 32px; }
+    .tab-bar { display: flex; background: #0f1117; border-radius: 10px; padding: 4px; margin-bottom: 28px; }
+    .tab { flex: 1; text-align: center; padding: 9px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; color: #6b7280; text-decoration: none; transition: all 0.2s; }
+    .tab.active { background: #4f6ef7; color: #fff; }
+    .form-group { margin-bottom: 18px; }
+    label { display: block; font-size: 12px; color: #9ca3af; margin-bottom: 7px; font-weight: 500; }
+    .input-wrap { position: relative; }
+    .input-wrap i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #4a5568; font-size: 14px; }
+    input { width: 100%; background: #0f1117; border: 1px solid #2a2f3d; border-radius: 10px; padding: 11px 14px 11px 40px; color: #dfe7f5; font-size: 14px; font-family: 'Segoe UI', sans-serif; transition: border 0.2s; outline: none; }
+    input:focus { border-color: #4f6ef7; }
+    .btn { width: 100%; background: #4f6ef7; color: #fff; border: none; border-radius: 10px; padding: 12px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Segoe UI', sans-serif; transition: background 0.2s; margin-top: 6px; }
+    .btn:hover { background: #3b5bdb; }
+    .error { background: #2a1a20; border: 1px solid #6b2d2d; border-radius: 10px; padding: 12px 14px; font-size: 13px; color: #e05c6a; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+    .hint { font-size: 11px; color: #4a5568; margin-top: 6px; }
+    .divider { text-align: center; margin: 20px 0; font-size: 12px; color: #4a5568; position: relative; }
+    .divider::before, .divider::after { content: ''; position: absolute; top: 50%; width: 42%; height: 1px; background: #2a2f3d; }
+    .divider::before { left: 0; }
+    .divider::after { right: 0; }
+    .link { display: block; text-align: center; font-size: 13px; color: #4f6ef7; text-decoration: none; margin-top: 4px; }
+    .link:hover { color: #7b96ff; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <div class="logo-icon"><i class="fa-solid fa-wallet"></i></div>
+      <div class="logo-text">Dompetku Bukan Dompetmu</div>
+      <div class="logo-sub">Catat keuanganmu dengan mudah</div>
+    </div>
+
+    <div class="card">
+      <div class="tab-bar">
+        <a href="/" class="tab {% if mode == 'login' %}active{% endif %}">
+          <i class="fa-solid fa-right-to-bracket"></i> Masuk
+        </a>
+        <a href="/daftar" class="tab {% if mode == 'daftar' %}active{% endif %}">
+          <i class="fa-solid fa-user-plus"></i> Daftar
+        </a>
+      </div>
+
+      {% if error %}
+      <div class="error">
+        <i class="fa-solid fa-circle-exclamation"></i> {{ error }}
+      </div>
+      {% endif %}
+
+      {% if mode == 'login' %}
+      <form method="POST" action="/">
+        <div class="form-group">
+          <label>Username</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-user"></i>
+            <input type="text" name="username" placeholder="Masukkan username" required autofocus>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-lock"></i>
+            <input type="password" name="password" placeholder="Masukkan password" required>
+          </div>
+        </div>
+        <button type="submit" class="btn">
+          <i class="fa-solid fa-right-to-bracket"></i> Masuk
+        </button>
+      </form>
+      <div class="divider">atau</div>
+      <a href="/daftar" class="link">Belum punya akun? Daftar sekarang</a>
+
+      {% else %}
+      <form method="POST" action="/daftar">
+        <div class="form-group">
+          <label>Username</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-user"></i>
+            <input type="text" name="username" placeholder="Buat username" required autofocus>
+          </div>
+          <div class="hint">Minimal 3 karakter, huruf kecil semua</div>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-lock"></i>
+            <input type="password" name="password" placeholder="Buat password" required>
+          </div>
+          <div class="hint">Minimal 6 karakter</div>
+        </div>
+        <div class="form-group">
+          <label>Konfirmasi Password</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-lock"></i>
+            <input type="password" name="password2" placeholder="Ulangi password" required>
+          </div>
+        </div>
+        <button type="submit" class="btn">
+          <i class="fa-solid fa-user-plus"></i> Buat Akun
+        </button>
+      </form>
+      <div class="divider">atau</div>
+      <a href="/" class="link">Sudah punya akun? Masuk</a>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>

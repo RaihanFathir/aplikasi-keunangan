@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Dompetku — Transaksi</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Segoe UI',sans-serif; background:#0f1117; color:#dfe7f5; display:flex; min-height:100vh; }
+
+    .sidebar { width:220px; background:#161b27; border-right:1px solid #2a2f3d; padding:24px 0; display:flex; flex-direction:column; position:fixed; height:100vh; }
+    .logo { display:flex; align-items:center; gap:10px; padding:0 20px 24px; border-bottom:1px solid #2a2f3d; margin-bottom:16px; }
+    .logo-icon { width:36px; height:36px; background:#4f6ef7; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px; }
+    .logo-text { font-size:16px; font-weight:700; color:#fff; }
+    .nav-item { display:flex; align-items:center; gap:12px; padding:12px 20px; font-size:14px; color:#6b7280; text-decoration:none; transition:all 0.2s; border-left:3px solid transparent; }
+    .nav-item:hover { background:#1e2535; color:#dfe7f5; }
+    .nav-item.active { background:#1e2535; color:#fff; border-left:3px solid #4f6ef7; }
+    .nav-item i { width:18px; text-align:center; }
+    .sidebar-bottom { margin-top:auto; padding:16px 20px; border-top:1px solid #2a2f3d; }
+    .user-info { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+    .user-avatar { width:32px; height:32px; background:#4f6ef7; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; }
+    .user-name { font-size:13px; color:#dfe7f5; font-weight:500; }
+    .logout-btn { display:flex; align-items:center; gap:8px; color:#e05c6a; font-size:13px; text-decoration:none; }
+    .logout-btn:hover { color:#ff7b8a; }
+
+    .main { margin-left:220px; flex:1; padding:28px; }
+    .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; }
+    .page-title { font-size:22px; font-weight:600; color:#fff; }
+    .page-sub { font-size:13px; color:#6b7280; margin-top:4px; }
+
+    .content-grid { display:grid; grid-template-columns:380px 1fr; gap:20px; }
+    .panel { background:#1a1f2e; border:1px solid #2a2f3d; border-radius:14px; padding:24px; }
+    .panel-title { font-size:15px; font-weight:600; color:#c8cad4; margin-bottom:20px; padding-bottom:12px; border-bottom:1px solid #2a2f3d; }
+
+    .jenis-tabs { display:flex; background:#0f1117; border-radius:10px; padding:4px; margin-bottom:20px; gap:4px; }
+    .jenis-tab { flex:1; text-align:center; padding:9px 4px; border-radius:8px; font-size:12px; font-weight:500; cursor:pointer; color:#6b7280; border:none; background:transparent; font-family:'Segoe UI',sans-serif; transition:all 0.2s; }
+    .jenis-tab.active-masuk  { background:#1a2e25; color:#4cba85; }
+    .jenis-tab.active-keluar { background:#2a1a20; color:#e05c6a; }
+    .jenis-tab.active-pindah { background:#1a2040; color:#7b96ff; }
+
+    .form-group { margin-bottom:16px; }
+    label { display:block; font-size:12px; color:#9ca3af; margin-bottom:7px; font-weight:500; }
+    .input-wrap { position:relative; }
+    .input-wrap i { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:#4a5568; font-size:14px; }
+    input, select, textarea { width:100%; background:#0f1117; border:1px solid #2a2f3d; border-radius:10px; padding:11px 14px 11px 40px; color:#dfe7f5; font-size:14px; font-family:'Segoe UI',sans-serif; outline:none; transition:border 0.2s; }
+    input:focus, select:focus, textarea:focus { border-color:#4f6ef7; }
+    select option { background:#1a1f2e; }
+    textarea { padding:11px 14px; resize:none; height:80px; }
+
+    .btn-masuk  { width:100%; background:#4cba85; color:#fff; border:none; border-radius:10px; padding:12px; font-size:14px; font-weight:600; cursor:pointer; font-family:'Segoe UI',sans-serif; display:flex; align-items:center; justify-content:center; gap:8px; }
+    .btn-keluar { width:100%; background:#e05c6a; color:#fff; border:none; border-radius:10px; padding:12px; font-size:14px; font-weight:600; cursor:pointer; font-family:'Segoe UI',sans-serif; display:flex; align-items:center; justify-content:center; gap:8px; }
+    .btn-pindah { width:100%; background:#4f6ef7; color:#fff; border:none; border-radius:10px; padding:12px; font-size:14px; font-weight:600; cursor:pointer; font-family:'Segoe UI',sans-serif; display:flex; align-items:center; justify-content:center; gap:8px; }
+
+    .tx-item { display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid #1e2535; }
+    .tx-item:last-child { border-bottom:none; }
+    .tx-info { display:flex; align-items:center; gap:10px; }
+    .tx-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
+    .tx-icon.pemasukan   { background:#1a2e25; color:#4cba85; }
+    .tx-icon.pengeluaran { background:#2a1a20; color:#e05c6a; }
+    .tx-icon.pindah      { background:#1a2040; color:#7b96ff; }
+    .tx-name { font-size:13px; color:#dfe7f5; font-weight:500; }
+    .tx-detail { font-size:11px; color:#6b7280; margin-top:2px; }
+    .tx-amount { font-size:14px; font-weight:700; text-align:right; }
+    .tx-amount.pemasukan   { color:#4cba85; }
+    .tx-amount.pengeluaran { color:#e05c6a; }
+    .tx-amount.pindah      { color:#7b96ff; }
+    .tx-date-right { font-size:11px; color:#6b7280; margin-top:2px; text-align:right; }
+
+    .empty { text-align:center; padding:40px 20px; color:#6b7280; }
+    .empty i { font-size:40px; margin-bottom:12px; display:block; color:#2a2f3d; }
+
+    .hidden { display:none; }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="logo">
+      <div class="logo-icon"><i class="fa-solid fa-wallet"></i></div>
+      <div class="logo-text">Dompetku</div>
+    </div>
+    <a href="/dashboard" class="nav-item"><i class="fa-solid fa-house"></i> Dashboard</a>
+    <a href="/penyimpanan" class="nav-item"><i class="fa-solid fa-building-columns"></i> Penyimpanan</a>
+    <a href="/transaksi" class="nav-item active"><i class="fa-solid fa-arrows-left-right"></i> Transaksi</a>
+    <a href="/laporan" class="nav-item"><i class="fa-solid fa-chart-pie"></i> Laporan</a>
+    <div class="sidebar-bottom">
+      <div class="user-info">
+        <div class="user-avatar">{{ username[0].upper() }}</div>
+        <div class="user-name">{{ username }}</div>
+      </div>
+      <a href="/logout" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Keluar</a>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="page-title">Transaksi</div>
+        <div class="page-sub">Catat pemasukan, pengeluaran, dan pindah uang</div>
+      </div>
+    </div>
+
+    <div class="content-grid">
+      <!-- Form Transaksi -->
+      <div class="panel">
+        <div class="panel-title"><i class="fa-solid fa-pen" style="color:#4f6ef7;"></i> Catat Transaksi</div>
+
+        <!-- Tab Jenis -->
+        <div class="jenis-tabs">
+          <button class="jenis-tab active-masuk"  onclick="setJenis('pemasukan')"  id="tab-pemasukan">
+            <i class="fa-solid fa-arrow-down"></i> Pemasukan
+          </button>
+          <button class="jenis-tab" onclick="setJenis('pengeluaran')" id="tab-pengeluaran">
+            <i class="fa-solid fa-arrow-up"></i> Pengeluaran
+          </button>
+          <button class="jenis-tab" onclick="setJenis('pindah')" id="tab-pindah">
+            <i class="fa-solid fa-arrows-left-right"></i> Pindah
+          </button>
+        </div>
+
+        <form method="POST" action="/transaksi/tambah">
+          <input type="hidden" name="jenis" id="jenis-input" value="pemasukan">
+
+          <!-- Nominal -->
+          <div class="form-group">
+            <label>Nominal (Rp)</label>
+            <div class="input-wrap">
+              <i class="fa-solid fa-money-bill"></i>
+              <input type="number" name="nominal" placeholder="cth: 500000" min="1" required>
+            </div>
+          </div>
+
+          <!-- Dari (pengeluaran & pindah) -->
+          <div class="form-group" id="field-dari" style="display:none;">
+            <label>Dari Penyimpanan</label>
+            <div class="input-wrap">
+              <i class="fa-solid fa-building-columns"></i>
+              <select name="dari">
+                <option value="">-- Pilih penyimpanan --</option>
+                {% for nama in penyimpanan %}
+                <option value="{{ nama }}">{{ nama }} — Rp {{ "{:,.0f}".format(penyimpanan[nama]).replace(",",".") }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <!-- Tujuan (pemasukan & pindah) -->
+          <div class="form-group" id="field-tujuan">
+            <label>Ke Penyimpanan</label>
+            <div class="input-wrap">
+              <i class="fa-solid fa-building-columns"></i>
+              <select name="tujuan">
+                <option value="">-- Pilih penyimpanan --</option>
+                {% for nama in penyimpanan %}
+                <option value="{{ nama }}">{{ nama }} — Rp {{ "{:,.0f}".format(penyimpanan[nama]).replace(",",".") }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <!-- Keterangan -->
+          <div class="form-group">
+            <label>Keterangan (opsional)</label>
+            <div class="input-wrap">
+              <textarea name="keterangan" placeholder="cth: Gaji bulan Juni, Beli makan siang..."></textarea>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-masuk" id="submit-btn">
+            <i class="fa-solid fa-check"></i> Simpan Transaksi
+          </button>
+        </form>
+      </div>
+
+      <!-- Riwayat Transaksi -->
+      <div class="panel">
+        <div class="panel-title"><i class="fa-solid fa-clock-rotate-left" style="color:#4f6ef7;"></i> Riwayat Transaksi</div>
+        {% if transaksi %}
+          {% for t in transaksi | reverse %}
+          <div class="tx-item">
+            <div class="tx-info">
+              <div class="tx-icon {{ t.jenis }}">
+                {% if t.jenis == 'pemasukan' %}<i class="fa-solid fa-arrow-down"></i>
+                {% elif t.jenis == 'pengeluaran' %}<i class="fa-solid fa-arrow-up"></i>
+                {% else %}<i class="fa-solid fa-arrows-left-right"></i>{% endif %}
+              </div>
+              <div>
+                <div class="tx-name">{{ t.keterangan or t.jenis|capitalize }}</div>
+                <div class="tx-detail">
+                  {% if t.jenis == 'pemasukan' %}Masuk ke {{ t.tujuan }}
+                  {% elif t.jenis == 'pengeluaran' %}Keluar dari {{ t.dari }}
+                  {% else %}{{ t.dari }} → {{ t.tujuan }}{% endif %}
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class="tx-amount {{ t.jenis }}">
+                {% if t.jenis == 'pemasukan' %}+{% elif t.jenis == 'pengeluaran' %}-{% endif %}
+                Rp {{ "{:,.0f}".format(t.nominal).replace(",", ".") }}
+              </div>
+              <div class="tx-date-right">{{ t.tanggal }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="empty">
+            <i class="fa-solid fa-receipt"></i>
+            <p>Belum ada transaksi tercatat.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function setJenis(jenis) {
+      document.getElementById('jenis-input').value = jenis;
+
+      const tabs   = document.querySelectorAll('.jenis-tab');
+      const dari   = document.getElementById('field-dari');
+      const tujuan = document.getElementById('field-tujuan');
+      const btn    = document.getElementById('submit-btn');
+
+      tabs.forEach(t => t.className = 'jenis-tab');
+
+      if (jenis === 'pemasukan') {
+        document.getElementById('tab-pemasukan').classList.add('active-masuk');
+        dari.style.display   = 'none';
+        tujuan.style.display = 'block';
+        btn.className = 'btn-masuk';
+        btn.innerHTML = '<i class="fa-solid fa-arrow-down"></i> Simpan Pemasukan';
+      } else if (jenis === 'pengeluaran') {
+        document.getElementById('tab-pengeluaran').classList.add('active-keluar');
+        dari.style.display   = 'block';
+        tujuan.style.display = 'none';
+        btn.className = 'btn-keluar';
+        btn.innerHTML = '<i class="fa-solid fa-arrow-up"></i> Simpan Pengeluaran';
+      } else {
+        document.getElementById('tab-pindah').classList.add('active-pindah');
+        dari.style.display   = 'block';
+        tujuan.style.display = 'block';
+        btn.className = 'btn-pindah';
+        btn.innerHTML = '<i class="fa-solid fa-arrows-left-right"></i> Pindahkan Uang';
+      }
+    }
+  </script>
+</body>
+</html>

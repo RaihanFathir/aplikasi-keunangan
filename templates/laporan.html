@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Dompetku — Laporan</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Segoe UI',sans-serif; background:#0f1117; color:#dfe7f5; display:flex; min-height:100vh; }
+
+    .sidebar { width:220px; background:#161b27; border-right:1px solid #2a2f3d; padding:24px 0; display:flex; flex-direction:column; position:fixed; height:100vh; }
+    .logo { display:flex; align-items:center; gap:10px; padding:0 20px 24px; border-bottom:1px solid #2a2f3d; margin-bottom:16px; }
+    .logo-icon { width:36px; height:36px; background:#4f6ef7; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px; }
+    .logo-text { font-size:16px; font-weight:700; color:#fff; }
+    .nav-item { display:flex; align-items:center; gap:12px; padding:12px 20px; font-size:14px; color:#6b7280; text-decoration:none; transition:all 0.2s; border-left:3px solid transparent; }
+    .nav-item:hover { background:#1e2535; color:#dfe7f5; }
+    .nav-item.active { background:#1e2535; color:#fff; border-left:3px solid #4f6ef7; }
+    .nav-item i { width:18px; text-align:center; }
+    .sidebar-bottom { margin-top:auto; padding:16px 20px; border-top:1px solid #2a2f3d; }
+    .user-info { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+    .user-avatar { width:32px; height:32px; background:#4f6ef7; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; }
+    .user-name { font-size:13px; color:#dfe7f5; font-weight:500; }
+    .logout-btn { display:flex; align-items:center; gap:8px; color:#e05c6a; font-size:13px; text-decoration:none; }
+    .logout-btn:hover { color:#ff7b8a; }
+
+    .main { margin-left:220px; flex:1; padding:28px; }
+    .topbar { margin-bottom:24px; }
+    .page-title { font-size:22px; font-weight:600; color:#fff; }
+    .page-sub { font-size:13px; color:#6b7280; margin-top:4px; }
+
+    .row2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
+    .row-full { margin-bottom:20px; }
+    .panel { background:#1a1f2e; border:1px solid #2a2f3d; border-radius:14px; padding:24px; }
+    .panel-title { font-size:15px; font-weight:600; color:#c8cad4; margin-bottom:20px; padding-bottom:12px; border-bottom:1px solid #2a2f3d; }
+
+    .stat-row { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:20px; }
+    .stat-card { background:#0f1117; border:1px solid #2a2f3d; border-radius:10px; padding:14px; text-align:center; }
+    .stat-label { font-size:11px; color:#6b7280; margin-bottom:6px; }
+    .stat-value { font-size:16px; font-weight:700; }
+
+    .empty { text-align:center; padding:40px; color:#6b7280; }
+    .empty i { font-size:40px; margin-bottom:12px; display:block; color:#2a2f3d; }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="logo">
+      <div class="logo-icon"><i class="fa-solid fa-wallet"></i></div>
+      <div class="logo-text">Dompetku</div>
+    </div>
+    <a href="/dashboard" class="nav-item"><i class="fa-solid fa-house"></i> Dashboard</a>
+    <a href="/penyimpanan" class="nav-item"><i class="fa-solid fa-building-columns"></i> Penyimpanan</a>
+    <a href="/transaksi" class="nav-item"><i class="fa-solid fa-arrows-left-right"></i> Transaksi</a>
+    <a href="/laporan" class="nav-item active"><i class="fa-solid fa-chart-pie"></i> Laporan</a>
+    <div class="sidebar-bottom">
+      <div class="user-info">
+        <div class="user-avatar">{{ username[0].upper() }}</div>
+        <div class="user-name">{{ username }}</div>
+      </div>
+      <a href="/logout" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Keluar</a>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="page-title">Laporan Keuangan</div>
+      <div class="page-sub">Ringkasan dan grafik keuanganmu</div>
+    </div>
+
+    <!-- Statistik -->
+    {% set masuk = namespace(val=0) %}
+    {% set keluar = namespace(val=0) %}
+    {% set total_saldo = namespace(val=0) %}
+    {% for t in transaksi %}
+      {% if t.jenis == 'pemasukan' %}{% set masuk.val = masuk.val + t.nominal %}{% endif %}
+      {% if t.jenis == 'pengeluaran' %}{% set keluar.val = keluar.val + t.nominal %}{% endif %}
+    {% endfor %}
+    {% for v in penyimpanan.values() %}{% set total_saldo.val = total_saldo.val + v %}{% endfor %}
+
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-label">Total Saldo Sekarang</div>
+        <div class="stat-value" style="color:#7b96ff;">Rp {{ "{:,.0f}".format(total_saldo.val).replace(",",".") }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Pemasukan</div>
+        <div class="stat-value" style="color:#4cba85;">Rp {{ "{:,.0f}".format(masuk.val).replace(",",".") }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Pengeluaran</div>
+        <div class="stat-value" style="color:#e05c6a;">Rp {{ "{:,.0f}".format(keluar.val).replace(",",".") }}</div>
+      </div>
+    </div>
+
+    <div class="row2">
+      <!-- Pie Chart -->
+      <div class="panel">
+        <div class="panel-title"><i class="fa-solid fa-chart-pie" style="color:#4f6ef7;"></i> Komposisi Keuangan</div>
+        {% if transaksi %}
+          <canvas id="pieChart" height="200"></canvas>
+        {% else %}
+          <div class="empty"><i class="fa-solid fa-chart-pie"></i><p>Belum ada data transaksi.</p></div>
+        {% endif %}
+      </div>
+
+      <!-- Komposisi Penyimpanan -->
+      <div class="panel">
+        <div class="panel-title"><i class="fa-solid fa-building-columns" style="color:#4f6ef7;"></i> Komposisi Penyimpanan</div>
+        {% if penyimpanan %}
+          <canvas id="doughnutChart" height="200"></canvas>
+        {% else %}
+          <div class="empty"><i class="fa-solid fa-folder-open"></i><p>Belum ada penyimpanan.</p></div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Bar Chart Bulanan -->
+    <div class="row-full">
+      <div class="panel">
+        <div class="panel-title"><i class="fa-solid fa-chart-bar" style="color:#4f6ef7;"></i> Grafik Pemasukan & Pengeluaran per Bulan</div>
+        {% if transaksi %}
+          <canvas id="barChart" height="80"></canvas>
+        {% else %}
+          <div class="empty"><i class="fa-solid fa-chart-bar"></i><p>Belum ada data transaksi.</p></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const transaksi   = {{ transaksi | tojson }};
+    const penyimpanan = {{ penyimpanan | tojson }};
+    const bulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+
+    // ── Pie Chart: Pemasukan vs Pengeluaran ──
+    {% if transaksi %}
+    let totalMasuk = 0, totalKeluar = 0;
+    transaksi.forEach(t => {
+      if (t.jenis === 'pemasukan')   totalMasuk  += t.nominal;
+      if (t.jenis === 'pengeluaran') totalKeluar += t.nominal;
+    });
+    new Chart(document.getElementById('pieChart'), {
+      type: 'pie',
+      data: {
+        labels: ['Pemasukan', 'Pengeluaran'],
+        datasets: [{ data: [totalMasuk, totalKeluar], backgroundColor: ['#4cba85','#e05c6a'], borderWidth: 0 }]
+      },
+      options: {
+        plugins: { legend: { labels: { color: '#9ca3af' } } }
+      }
+    });
+    {% endif %}
+
+    // ── Doughnut Chart: Komposisi Penyimpanan ──
+    {% if penyimpanan %}
+    const pNames  = Object.keys(penyimpanan);
+    const pValues = Object.values(penyimpanan);
+    const pColors = ['#4f6ef7','#4cba85','#f7c948','#e05c6a','#a78bfa','#7ec8e3'];
+    new Chart(document.getElementById('doughnutChart'), {
+      type: 'doughnut',
+      data: {
+        labels: pNames,
+        datasets: [{ data: pValues, backgroundColor: pColors.slice(0, pNames.length), borderWidth: 0 }]
+      },
+      options: {
+        plugins: { legend: { labels: { color: '#9ca3af' } } }
+      }
+    });
+    {% endif %}
+
+    // ── Bar Chart: 6 Bulan Terakhir ──
+    {% if transaksi %}
+    const labels = [], dataIn = [], dataOut = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date();
+      d.setMonth(d.getMonth() - i);
+      const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+      labels.push(bulan[d.getMonth()].slice(0,3) + ' ' + d.getFullYear());
+      let m = 0, k = 0;
+      transaksi.forEach(t => {
+        if (t.tanggal.startsWith(key)) {
+          if (t.jenis === 'pemasukan')   m += t.nominal;
+          if (t.jenis === 'pengeluaran') k += t.nominal;
+        }
+      });
+      dataIn.push(m); dataOut.push(k);
+    }
+    new Chart(document.getElementById('barChart'), {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label:'Pemasukan',   data:dataIn,  backgroundColor:'#4cba85', borderRadius:6 },
+          { label:'Pengeluaran', data:dataOut, backgroundColor:'#e05c6a', borderRadius:6 }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { labels: { color:'#9ca3af' } } },
+        scales: {
+          x: { ticks:{ color:'#6b7280' }, grid:{ color:'#1e2535' } },
+          y: { ticks:{ color:'#6b7280' }, grid:{ color:'#1e2535' } }
+        }
+      }
+    });
+    {% endif %}
+  </script>
+</body>
+</html>

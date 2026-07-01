@@ -1,0 +1,28 @@
+{
+    "users": {
+        "admin": {
+            "password": "scrypt:32768:8:1$3OqT6xTQEHRtXB9G$1cdec17510d7e4cb1c9bf5951245eb8e7a1a69d8a8096a43743c221886b5bfa4757e486fd078cdf7c760483f7f9de53409d67789092506c247d21e0be240f06d",
+            "penyimpanan": {
+                "Cash": 20000
+            },
+            "transaksi": [
+                {
+                    "jenis": "pemasukan",
+                    "nominal": 25000,
+                    "dari": "",
+                    "tujuan": "Cash",
+                    "keterangan": "Dari moms",
+                    "tanggal": "2026-06-29"
+                },
+                {
+                    "jenis": "pengeluaran",
+                    "nominal": 5000,
+                    "dari": "Cash",
+                    "tujuan": "",
+                    "keterangan": "jajan",
+                    "tanggal": "2026-06-29"
+                }
+            ]
+        }
+    }
+}

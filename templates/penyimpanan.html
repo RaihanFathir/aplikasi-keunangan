@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Dompetku — Penyimpanan</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Segoe UI',sans-serif; background:#0f1117; color:#dfe7f5; display:flex; min-height:100vh; }
+
+    .sidebar { width:220px; background:#161b27; border-right:1px solid #2a2f3d; padding:24px 0; display:flex; flex-direction:column; position:fixed; height:100vh; }
+    .logo { display:flex; align-items:center; gap:10px; padding:0 20px 24px; border-bottom:1px solid #2a2f3d; margin-bottom:16px; }
+    .logo-icon { width:36px; height:36px; background:#4f6ef7; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px; }
+    .logo-text { font-size:16px; font-weight:700; color:#fff; }
+    .nav-item { display:flex; align-items:center; gap:12px; padding:12px 20px; font-size:14px; color:#6b7280; text-decoration:none; transition:all 0.2s; border-left:3px solid transparent; }
+    .nav-item:hover { background:#1e2535; color:#dfe7f5; }
+    .nav-item.active { background:#1e2535; color:#fff; border-left:3px solid #4f6ef7; }
+    .nav-item i { width:18px; text-align:center; }
+    .sidebar-bottom { margin-top:auto; padding:16px 20px; border-top:1px solid #2a2f3d; }
+    .user-info { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+    .user-avatar { width:32px; height:32px; background:#4f6ef7; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; }
+    .user-name { font-size:13px; color:#dfe7f5; font-weight:500; }
+    .logout-btn { display:flex; align-items:center; gap:8px; color:#e05c6a; font-size:13px; text-decoration:none; }
+    .logout-btn:hover { color:#ff7b8a; }
+
+    .main { margin-left:220px; flex:1; padding:28px; }
+    .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; }
+    .page-title { font-size:22px; font-weight:600; color:#fff; }
+    .page-sub { font-size:13px; color:#6b7280; margin-top:4px; }
+
+    .content-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+    .panel { background:#1a1f2e; border:1px solid #2a2f3d; border-radius:14px; padding:24px; }
+    .panel-title { font-size:15px; font-weight:600; color:#c8cad4; margin-bottom:20px; padding-bottom:12px; border-bottom:1px solid #2a2f3d; }
+
+    .form-group { margin-bottom:16px; }
+    label { display:block; font-size:12px; color:#9ca3af; margin-bottom:7px; font-weight:500; }
+    .input-wrap { position:relative; }
+    .input-wrap i { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:#4a5568; font-size:14px; }
+    input[type=text], input[type=number] { width:100%; background:#0f1117; border:1px solid #2a2f3d; border-radius:10px; padding:11px 14px 11px 40px; color:#dfe7f5; font-size:14px; font-family:'Segoe UI',sans-serif; outline:none; transition:border 0.2s; }
+    input:focus { border-color:#4f6ef7; }
+    .btn { width:100%; background:#4f6ef7; color:#fff; border:none; border-radius:10px; padding:12px; font-size:14px; font-weight:600; cursor:pointer; font-family:'Segoe UI',sans-serif; transition:background 0.2s; display:flex; align-items:center; justify-content:center; gap:8px; }
+    .btn:hover { background:#3b5bdb; }
+
+    .wallet-card { background:#0f1117; border:1px solid #2a2f3d; border-radius:12px; padding:16px 18px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; }
+    .wallet-card:last-child { margin-bottom:0; }
+    .wallet-left { display:flex; align-items:center; gap:12px; }
+    .wallet-icon { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px; }
+    .wallet-name { font-size:14px; font-weight:600; color:#dfe7f5; }
+    .wallet-saldo { font-size:12px; color:#6b7280; margin-top:3px; }
+    .wallet-saldo span { color:#4cba85; font-weight:600; }
+    .hapus-btn { background:#2a1a20; color:#e05c6a; border:1px solid #6b2d2d; border-radius:8px; padding:7px 12px; font-size:12px; cursor:pointer; font-family:'Segoe UI',sans-serif; transition:all 0.2s; display:flex; align-items:center; gap:6px; }
+    .hapus-btn:hover { background:#e05c6a; color:#fff; }
+
+    .empty { text-align:center; padding:40px 20px; color:#6b7280; }
+    .empty i { font-size:40px; margin-bottom:12px; display:block; color:#2a2f3d; }
+    .empty p { font-size:13px; }
+
+    .total-card { background:#1a2040; border:1px solid #4f6ef7; border-radius:12px; padding:16px 18px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; }
+    .total-label { font-size:12px; color:#6b7280; margin-bottom:4px; }
+    .total-value { font-size:20px; font-weight:700; color:#7b96ff; }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="logo">
+      <div class="logo-icon"><i class="fa-solid fa-wallet"></i></div>
+      <div class="logo-text">Dompetku</div>
+    </div>
+    <a href="/dashboard" class="nav-item"><i class="fa-solid fa-house"></i> Dashboard</a>
+    <a href="/penyimpanan" class="nav-item active"><i class="fa-solid fa-building-columns"></i> Penyimpanan</a>
+    <a href="/transaksi" class="nav-item"><i class="fa-solid fa-arrows-left-right"></i> Transaksi</a>
+    <a href="/laporan" class="nav-item"><i class="fa-solid fa-chart-pie"></i> Laporan</a>
+    <div class="sidebar-bottom">
+      <div class="user-info">
+        <div class="user-avatar">{{ username[0].upper() }}</div>
+        <div class="user-name">{{ username }}</div>
+      </div>
+      <a href="/logout" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Keluar</a>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="page-title">Penyimpanan</div>
+        <div class="page-sub">Kelola dompet dan penyimpanan uangmu</div>
+      </div>
+    </div>
+
+    <div class="content-grid">
+      <!-- Form Tambah -->
+      <div class="panel">
+        <div class="panel-title"><i class="fa-solid fa-plus" style="color:#4f6ef7;"></i> Tambah Penyimpanan Baru</div>
+        <form method="POST" action="/penyimpanan/tambah">
+          <div class="form-group">
+            <label>Nama Penyimpanan</label>
+            <div class="input-wrap">
+              <i class="fa-solid fa-tag"></i>
+              <input type="text" name="nama" placeholder="cth: Cash, Dana, Tabungan..." required>
+            </div>
+          </div>
+          <button type="submit" class="btn"><i class="fa-solid fa-plus"></i> Tambah Penyimpanan</button>
+        </form>
+      </div>
+
+      <!-- Daftar Penyimpanan -->
+      <div class="panel">
+        <div class="panel-title"><i class="fa-solid fa-building-columns" style="color:#4f6ef7;"></i> Daftar Penyimpanan</div>
+
+        {% if penyimpanan %}
+          {% set total = namespace(val=0) %}
+          {% for v in penyimpanan.values() %}{% set total.val = total.val + v %}{% endfor %}
+          <div class="total-card">
+            <div>
+              <div class="total-label">Total Semua Saldo</div>
+              <div class="total-value">Rp {{ "{:,.0f}".format(total.val).replace(",", ".") }}</div>
+            </div>
+            <i class="fa-solid fa-wallet" style="font-size:24px; color:#4f6ef7; opacity:0.5;"></i>
+          </div>
+
+          {% set colors = ['#4f6ef7','#4cba85','#f7c948','#e05c6a','#a78bfa','#7ec8e3'] %}
+          {% for nama, saldo in penyimpanan.items() %}
+          <div class="wallet-card">
+            <div class="wallet-left">
+              <div class="wallet-icon" style="background:{{ colors[loop.index0 % colors|length] }}22;">
+                <i class="fa-solid fa-piggy-bank" style="color:{{ colors[loop.index0 % colors|length] }};"></i>
+              </div>
+              <div>
+                <div class="wallet-name">{{ nama }}</div>
+                <div class="wallet-saldo">Saldo: <span>Rp {{ "{:,.0f}".format(saldo).replace(",", ".") }}</span></div>
+              </div>
+            </div>
+            <a href="/penyimpanan/hapus/{{ nama }}" class="hapus-btn"
+               onclick="return confirm('Hapus penyimpanan {{ nama }}? Semua data akan hilang.')">
+              <i class="fa-solid fa-trash"></i> Hapus
+            </a>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="empty">
+            <i class="fa-solid fa-folder-open"></i>
+            <p>Belum ada penyimpanan.<br>Buat penyimpanan pertamamu!</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</body>
+</html>
